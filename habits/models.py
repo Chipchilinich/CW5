@@ -1,56 +1,82 @@
 from django.db import models
-from rest_framework.exceptions import ValidationError
-
-from config import settings
-
-# Create your models here.
+from users.models import User
+from datetime import timedelta
 
 
-class Habits(models.Model):
-    owner = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        null=True,
-        blank=True,
-        on_delete=models.CASCADE,
-        related_name="habits",
-        verbose_name="Создатель привычки",
+NULLABLE = {"blank": True, "null": True}
+
+
+class Habit(models.Model):
+    """Модель привычки."""
+
+    PERIODICITY_CHOICES = [
+        ("every day", "каждый день"),
+        ("once a week", "раз в неделю"),
+        ("twice a week", "дважды в неделю"),
+        ("three times a week", "трижды в неделю"),
+        ("four times a week", "четыре раза в неделю"),
+        ("five times a week", "пять раз в неделю"),
+        ("six times a week", "шесть раз в неделю"),
+    ]
+
+    habit = models.CharField(
+        max_length=255,
+        verbose_name="Привычка",
+        **NULLABLE
     )
-    place = models.CharField(max_length=250, verbose_name="Место выполнения", help_text="Введите Место")
-    time = models.TimeField(verbose_name="Время выполнения")
-    action = models.CharField(max_length=255, verbose_name="Действие")
-    pleasant_habit_flag = models.BooleanField(
-        max_length=250, verbose_name="Признак приятной привычки", help_text="Введите Признак"
+    owner = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        verbose_name="Автор привычки",
+        help_text="Укажите автора привычки",
+        related_name="users_habits",
+        **NULLABLE
+    )
+    place = models.CharField(
+        max_length=255,
+        verbose_name="Место выполнения привычки",
+        **NULLABLE
+    )
+    start_time = models.DateTimeField(
+        verbose_name="Время старта",
+        help_text="Выберете время когда необходимо выполнять привычку",
+        **NULLABLE
+    )
+    action = models.CharField(
+        max_length=300,
+        verbose_name="Действие привычки",
+        help_text="Укажите действие привычки",
+        **NULLABLE
+    )
+    is_pleasant = models.BooleanField(
+        default=False,
+        verbose_name="Признак приятной привычки",
+        help_text="Привычка является приятной",
     )
     related_habit = models.ForeignKey(
         "self",
         on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        limit_choices_to={"pleasant_habit_flag": True},
         verbose_name="Связанная привычка",
-    )  # ForeignKey self
-    frequency = models.PositiveIntegerField(default=1, verbose_name="Периодичность")
-    reward = models.CharField(
-        max_length=250, null=True, blank=True, verbose_name="Вознаграждение ", help_text="Введите Вознаграждение "
+        related_name="related_habits",
+        **NULLABLE
     )
-    time_to_perform = models.PositiveIntegerField(verbose_name="Время на выполнение")  # Int+
-    publicity_flag = models.BooleanField(default=False, verbose_name="Признак публичности")
-
-    def __str__(self):
-        return self.action
-
-    def clean(self):
-        if self.reward and self.related_habit:
-            raise ValidationError("Нельзя совмещать вознаграждение и связанную привычку.")
-        if self.time_to_perform > 120:
-            raise ValidationError("Время выполнения не должно быть больше 120 минут.")
-        if self.frequency < 1 or self.frequency > 7:
-            raise ValidationError("Периодичность выполнения должна быть от 1 до 7 дней")
-
-    class Meta:
-        verbose_name = "Привычка"
-        verbose_name_plural = "Привычки"
-        # permissions = [
-        #     ("can_unpublish_product", "Can unpublish product"),
-        #     ("remove_any_product", "Remove any product"),
-        # ]
+    periodicity = models.CharField(
+        max_length=25,
+        choices=PERIODICITY_CHOICES,
+        verbose_name="Периодичность выполнения привычки",
+        help_text="Укажите переодичность выполнения привычки",
+        default="every day",
+    )
+    remuneration = models.CharField(
+        verbose_name="Вознаграждение после выполнения привычки",
+        **NULLABLE
+    )
+    execution_time = models.DurationField(
+        default=timedelta(seconds=120),
+        verbose_name="Время выполнения привычки",
+    )
+    is_published = models.BooleanField(
+        default=False,
+        verbose_name="Публикация в общем доступе",
+        help_text="Опубликовать для общего доступа",
+    )
