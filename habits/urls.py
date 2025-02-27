@@ -1,13 +1,16 @@
-from rest_framework.routers import SimpleRouter
+from django.urls import path
 
-from habits.apps import HabitsConfig
-from habits.views import HabitViewSet
+from habits.apps import AtomicHabitsConfig
+from habits.views import HabitCreateView, HabitDeleteView, HabitListView, HabitUpdateView, PublicHabitListView
 
-app_name = HabitsConfig
+# Описание маршрутизации для User
 
-router = SimpleRouter()
-router.register("", HabitViewSet)
+app_name = AtomicHabitsConfig.name
 
-urlpatterns = []
-
-urlpatterns += router.urls
+urlpatterns = [
+    path("habits_list/", HabitListView.as_view(), name="habits_list"),
+    path("habits_public_list/", PublicHabitListView.as_view(), name="habits_public_list"),
+    path("habits_create/", HabitCreateView.as_view(), name="habits_create"),
+    path("habits_update/<int:pk>/", HabitUpdateView.as_view(), name="habits_update"),
+    path("habits_delete/<int:pk>/", HabitDeleteView.as_view(), name="habits_delete"),
+]

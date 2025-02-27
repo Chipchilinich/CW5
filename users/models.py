@@ -1,47 +1,46 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
-
-NULLABLE = {"blank": True, "null": True}
+# Create your models here.
 
 
 class User(AbstractUser):
-    """Модель пользователя."""
-    username = None
-    email = models.EmailField(
-        unique=True, verbose_name="Почта", help_text="Укажите почту"
+    username = models.CharField(
+        max_length=100,
+        verbose_name="Username",
+        blank=True,
+        null=True,
+        help_text="Введите свое имя",
     )
-    phone = models.CharField(
-        max_length=35,
-        verbose_name="Телефон",
-        help_text="Укажите телефон",
-        **NULLABLE
-    )
-    tg_nik = models.CharField(
-        max_length=50,
-        verbose_name="TG",
-        help_text="Укажите TG ник",
-        **NULLABLE
-    )
+    email = models.EmailField(unique=True, verbose_name="Электронная почта")
     avatar = models.ImageField(
         upload_to="users/avatars",
+        blank=True,
+        null=True,
         verbose_name="Аватар",
-        help_text="Укажите аватар",
-        **NULLABLE
+        help_text="Загрузити фотографию",
     )
-    tg_chat_id = models.CharField(
-        max_length=50,
-        verbose_name="TG chat_id",
-        help_text="Укажите TG chat_id",
-        **NULLABLE
+    phone_number = models.CharField(
+        max_length=15,
+        verbose_name="Номер телефона",
+        help_text="Введите номер телефона",
+        blank=True,
+        null=True,
     )
+    # telegram = models.CharField(
+    #     max_length=15,
+    #     verbose_name="Телеграм",
+    #     help_text="Введите телеграма",
+    #     blank=True,
+    #     null=True,
+    # )
 
-    USERNAME_FIELD = "email"
-    REQUIRED_FIELDS = []
+    def __str__(self):
+        return f"{self.email}"
 
     class Meta:
         verbose_name = "пользователь"
-        verbose_name_plural = "пользователи"
+        verbose_name_plural = "Пользователи"
 
-    def __str__(self):
-        return self.email
+    USERNAME_FIELD = "email"
+    REQUIRED_FIELDS = []

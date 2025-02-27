@@ -1,25 +1,81 @@
-from rest_framework.viewsets import ModelViewSet
-from habits.models import Habit
-from habits.paginations import CustomPagination
-from habits.serializers import HabitSerializer
-from rest_framework.permissions import IsAuthenticated
-from users.permissions import IsOwner
+from rest_framework.exceptions import PermissionDenied
+from rest_framework.generics import CreateAPIView, DestroyAPIView, ListAPIView, UpdateAPIView
+
+from habits.models import Habits
+from habits.paginators import HabitListPagination
+from habits.serliazers import HabitsSerializer
+
+# Create your views here.
 
 
-class HabitViewSet(ModelViewSet):
-    """CRUD модели привычка"""
-    queryset = Habit.objects.all()
-    serializer_class = HabitSerializer
-    permission_classes = (IsAuthenticated,)
-    pagination_class = CustomPagination
+class HabitListView(ListAPIView):
+    """
+    Просмотор  привычки
+    """
 
-    def get_permissions(self):
-        """Ограничивает доступ модератору"""
-        if self.action != "create":
-            self.permission_classes = [IsOwner]
-        return super().get_permissions()
+    serializer_class = HabitsSerializer
+    pagination_class = HabitListPagination
 
-    def perform_create(self, serializer):
-        habit = serializer.save()
-        habit.owner = self.request.user
-        habit.save()
+    def get_queryset(self):
+        return Habits.objects.filter(owner=self.request.user).order_by("action")
+
+
+class PublicHabitListView(ListAPIView):
+    """
+    Просмотор всех привычки
+    """
+
+    serializer_class = HabitsSerializer
+
+    def get_queryset(self):
+        return Habits.objects.filter(publicity_flag=True).order_by("action")
+
+
+class HabitCreateView(CreateAPIView):
+    """
+    создание  привычки
+    """
+
+    serializer_class = HabitsSerializer
+
+
+class HabitUpdateView(UpdateAPIView):
+    """
+    Обновление привычки
+    """
+
+    serializer_class = HabitsSerializer
+
+    def get_queryset(self):
+        # Получаем привычки, принадлежащие текущему пользователю
+        return Habits.objects.filter(owner=self.request.user)
+
+    def perform_update(self, serializer):
+        # Сохраняем обновленную привычку
+        serializer.save()
+
+    def get_object(self):
+        # Получаем привычку, которую нужно редактировать
+        obj = super().get_object()
+        if obj.owner != self.request.user:
+            raise PermissionDenied("У вас нет прав для изменения этой привычки.")
+        return obj
+
+
+class HabitDeleteView(DestroyAPIView):
+    """
+    Удаление  привычки
+    """
+
+    serializer_class = HabitsSerializer
+
+    def get_queryset(self):
+        # Получаем привычки, принадлежащие текущему пользователю
+        return Habits.objects.filter(owner=self.request.user)
+
+    def get_object(self):
+        # Получаем привычку, которую нужно удалять
+        obj = super().get_object()
+        if obj.owner != self.request.user:
+            raise PermissionDenied("У вас нет прав для удаления этой привычки.")
+        return obj
