@@ -13,7 +13,7 @@ def telegram_reminder():
     Задача отправки уведомления в телеграм
     """
 
-    for habits in Habits.object.all():
+    for habits in Habits.objects.all():
         message = (
             f"Не забудьте выполнить привычку: {habits.action}\n"
             f"Время выполнения: {habits.time}\n"

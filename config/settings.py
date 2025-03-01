@@ -211,11 +211,4 @@ CELERY_TASK_TRACK_STARTED = True
 # Максимальное время на выполнение задачи
 CELERY_TASK_TIME_LIMIT = 30 * 60
 
-CELERY_BEAT_SCHEDULE = {
-    "task-name": {
-        "task": "college.deactivate_inactive_users",
-        "schedule": timedelta(days=1),  # Расписание выполнения задачи (например, каждые день)
-    },
-}
-
 TELEGRAM_API_KEY = os.getenv("TELEGRAM_API_KEY")
