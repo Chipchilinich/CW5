@@ -26,6 +26,7 @@ class PublicHabitListView(ListAPIView):
     """
 
     serializer_class = HabitsSerializer
+    permission_classes = [permissions.AllowAny]
 
     def get_queryset(self):
         return Habits.objects.filter(publicity_flag=True).order_by("action")
