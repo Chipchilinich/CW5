@@ -1,5 +1,6 @@
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.generics import CreateAPIView, DestroyAPIView, ListAPIView, UpdateAPIView
+from rest_framework import permissions
 
 from habits.models import Habits
 from habits.paginators import HabitListPagination

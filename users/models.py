@@ -5,6 +5,11 @@ from django.db import models
 
 
 class User(AbstractUser):
+    chat_id = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+    )
     username = models.CharField(
         max_length=100,
         verbose_name="Username",
