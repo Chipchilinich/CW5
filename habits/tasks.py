@@ -19,7 +19,7 @@ def telegram_reminder():
             f"Время выполнения: {habits.time}\n"
             f"Место выполнения: {habits.place}."
         )
-        params = {"text": message, "chat_id": habits.chat_id}
+        params = {"text": message, "chat_id": habits.owner.chat_id}
         requests.get(
             f"http://api.telegram.org/bot{settings.TELEGRAM_API_KEY}/sendMessage",
             params=params,
